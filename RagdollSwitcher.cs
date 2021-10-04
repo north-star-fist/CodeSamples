@@ -5,6 +5,10 @@ using UnityEngine;
 
 namespace Sergey.Safonov.Actors {
 
+    /**
+     * <summary>Switches ragdoll of some character on or off. 
+     * Does not affect an animator, processes rigidbodies and colliders only.</summary>
+     */
     public class RagdollSwitcher : ActorComponent {
 
         [Tooltip("Fill the array with ragdoll rigidbodies and related colliders")]
