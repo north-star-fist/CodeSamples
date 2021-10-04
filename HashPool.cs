@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 
 using UnityEngine;
@@ -43,10 +44,8 @@ namespace Sergey.Safonov.Utility.Pool
             if (!busyItems.Contains(item)) {
                 return;
             }
-            PoolItem pItem = item.GetComponent<PoolItem>();
-            if (pItem != null) {
-                pItem.OnRelease();
-            }
+            PoolItem[] itemComp = item.GetComponents<PoolItem>();
+            Array.ForEach(itemComp, (i) => i.OnRelease());
             freeItems.Add(item);
             busyItems.Remove(item);
         }
@@ -74,10 +73,8 @@ namespace Sergey.Safonov.Utility.Pool
                 freeItems.Remove(obj);
             }
 
-            PoolItem itemComp = obj.GetComponent<PoolItem>();
-            if (itemComp != null) {
-                itemComp.OnBorrow();
-            }
+            PoolItem[] itemComp = obj.GetComponents<PoolItem>();
+            Array.ForEach(itemComp, (i) => i.OnBorrow());
 
             return obj;
         }
