@@ -4,7 +4,10 @@ using UnityEngine;
 
 namespace Sergey.Safonov.Utility.Pool
 {
-
+    
+    /**
+    * <summary>Hash set based pool. Data is kept in two hashsets for busy and free items.</summary>
+    */
     public class HashPool : Pool
     {
         GameObject prefab;
@@ -18,16 +21,24 @@ namespace Sergey.Safonov.Utility.Pool
             this.prefab = prefab;
             this.capacity = capacity;
         }
-
+        
+        /**
+         * <summary>Borrows a game object</summary>
+         */
         public GameObject Borrow() {
             return borrow(false, Vector3.zero, Quaternion.identity);
         }
-
+        
+        /**
+         * <summary>Borrows and locates a game object</summary>
+         */
         public GameObject Borrow(Vector3 pos, Quaternion rot) {
             return borrow(true, pos, rot);
         }
 
-
+        /**
+         * <summary>Releases the game object</summary>
+         */
         public void Release(GameObject item) {
             if (!busyItems.Contains(item)) {
                 return;
