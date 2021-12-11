@@ -69,10 +69,15 @@ namespace Sergey.Safonov.Utility
         /// <param name="obj">object that moves</param>
         /// <param name="from">old location (may be approximate)</param>
         /// <param name="to">new location</param>
-        public void Move(T obj, Vector3 from, Vector3 to)
+        /// <returns>true if the object was moved and false if there was not such object in the tree
+        /// or the object is out of bounds of the tree (it is removed in this case)</returns>
+        public bool Move(T obj, Vector3 from, Vector3 to)
         {
-            Remove(obj, from, true);
-            Add(obj, to);
+            if (Remove(obj, from, true))
+            {
+                return Add(obj, to);
+            }
+            return false;
         }
 
 
