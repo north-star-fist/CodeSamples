@@ -10,6 +10,9 @@ namespace Sergey.Safonov.Utility
     /// Suitable for both static and moving objects</summary>
     public class QuadTree<T> : IEnumerable<T>
     {
+
+        private const int DEFAULT_CELL_CAPACITY = 4;
+
         private readonly QuadTree<T> _parent;
 
         private Bounds _boundary;
@@ -23,19 +26,22 @@ namespace Sergey.Safonov.Utility
         //north-west; north-east; south-west; south-east
         readonly List<QuadTree<T>> _subTrees = new List<QuadTree<T>>(4);
         
+
         /// <summary> Creates instance of QuadTree. </summary>
         /// <param name="boundary">bounds of the tree box(cell)</param>
         /// <param name="cellCapacity">maximum capacity of each tree cell before it's splitting into four subcells</param>
-        public QuadTree(Bounds boundary, int cellCapacity = 4) : this(boundary, cellCapacity, null) {
+        public QuadTree(Bounds boundary, int cellCapacity = DEFAULT_CELL_CAPACITY) : this(boundary, cellCapacity, null) {
         }
+
 
         /// <summary> Creates instance of QuadTree. </summary>
         /// <param name="center">center of bounds of the tree box(cell)</param>
         /// <param name="size">size of bounds of the tree box(cell)</param>
         /// <param name="cellCapacity">maximum capacity of each tree cell before it's splitting into four subcells</param>
-        public QuadTree(Vector3 center, Vector3 size, int cellCapacity = 4) 
+        public QuadTree(Vector3 center, Vector3 size, int cellCapacity = DEFAULT_CELL_CAPACITY) 
             : this(new Bounds(center, size), cellCapacity) {
         }
+
 
         /// <summary> Creates instance of QuadTree. </summary>
         /// <param name="boundary">bounds of the tree box(cell)</param>
@@ -47,6 +53,7 @@ namespace Sergey.Safonov.Utility
             _parent = parent;
         }
         
+
         /// <summary> Adds an object to the tree. </summary>
         /// <param name="obj">new object</param>
         /// <param name="location">location of the object</param>
@@ -65,24 +72,19 @@ namespace Sergey.Safonov.Utility
             return _subTrees.Any(child => child.Add(obj, location));
         }
 
+
         /// <summary> Updates object that moves. </summary>
         /// <param name="obj">object that moves</param>
         /// <param name="from">old location (may be approximate)</param>
         /// <param name="to">new location</param>
         /// <returns>true if the object was moved and false if there was not such object in the tree
         /// or the object is out of bounds of the tree (it is removed in this case)</returns>
-        public bool Move(T obj, Vector3 from, Vector3 to)
-        {
-            if (Remove(obj, from, true))
-            {
-                return Add(obj, to);
-            }
-            return false;
-        }
+        public bool Move(T obj, Vector3 from, Vector3 to) => Remove(obj, from, true) ? Add(obj, to) : false;
 
 
-         /// <summary> Finds all objects that are located at the specified bounds. </summary>
+        /// <summary> Finds all objects that are located at the specified bounds. </summary>
         public IEnumerable<T> GetAllFromRegion(Bounds boundBox) => new RegionObjects(this, boundBox);
+
 
          /// <summary> Checks if the object is inside specified box. </summary>
          public bool Contains(T obj, Bounds boundaryBox) =>
@@ -98,9 +100,11 @@ namespace Sergey.Safonov.Utility
         public bool Remove(T obj, Vector3 location, bool searchOutOfLocation = false) 
              => RemoveNarrow(obj, location, searchOutOfLocation);
 
+
         IEnumerator IEnumerable.GetEnumerator() => GetEnumerator();
 
         public IEnumerator<T> GetEnumerator() => GetAllFromRegion(_boundary).GetEnumerator();
+
 
         private bool RemoveNarrow(T obj, Vector3 location, bool searchOutOfLocation = false)
         {
@@ -108,17 +112,17 @@ namespace Sergey.Safonov.Utility
 
             if (RemoveTheCellObject(obj)) return true;
             
-            if (_subTrees.Any(childTree => childTree.RemoveNarrow(obj, location, searchOutOfLocation)))
-            {
-                return true;
-            }
+            if (_subTrees.Any(childTree => childTree.RemoveNarrow(obj, location, searchOutOfLocation))) return true;
+
             //we are at the bottom. Now we can start to search widely up
             return (searchOutOfLocation && _parent != null) && _parent.RemoveWide(obj, this);
         }
 
+
         private bool RemoveWide(T obj, QuadTree<T> treeToExclude = null) 
             => RemoveTheCellObject(obj) 
                || _subTrees.Where(subTree => subTree != treeToExclude).Any(childTree => childTree.RemoveWide(obj));
+
 
         private bool RemoveTheCellObject(T obj)
         {
@@ -130,6 +134,7 @@ namespace Sergey.Safonov.Utility
             }
             return false;
         }
+
 
         // Subdivides the Quad Tree space into cells with separate Quade Trees
         private void Subdivide() {
@@ -149,6 +154,8 @@ namespace Sergey.Safonov.Utility
             }
             _objects.Clear();
         }
+
+
 
         /// <summary> Iterable subclass for objects iterating without keeping them in separate collection. </summary>
         private class RegionObjects : IEnumerable<T>
@@ -184,6 +191,8 @@ namespace Sergey.Safonov.Utility
             IEnumerator IEnumerable.GetEnumerator() => GetEnumerator();
         }
         
+
+
         private class LocatedObject<TO>
         {
             public readonly TO Obj;
