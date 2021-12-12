@@ -114,7 +114,7 @@ namespace Sergey.Safonov.Utility
             if (RemoveTheCellObject(obj)) return true;
 
             if (_subTrees.Any(childTree => childTree.RemoveNarrow(obj, location, searchOutOfLocation))) {
-                if (isReadyForCompression()) combine();
+                if (IsReadyForCompression()) Combine();
                 return true;
             }
 
@@ -129,7 +129,7 @@ namespace Sergey.Safonov.Utility
 
             if (_subTrees.Where(subTree => subTree != treeToExclude).Any(childTree => childTree.RemoveWide(obj)))
             {
-                if (isReadyForCompression()) combine();
+                if (IsReadyForCompression()) Combine();
                 return true;
             }
             return false;
@@ -168,13 +168,13 @@ namespace Sergey.Safonov.Utility
         }
 
 
-        private bool isReadyForCompression()
+        private bool IsReadyForCompression()
         {
             return !_subTrees.Any(st => st._subTrees.Any()) && _subTrees.Aggregate(0, (c, st) => c + st._objects.Count) <= _cellCapacity;
         }
 
 
-        private void combine()
+        private void Combine()
         {
             _subTrees.Aggregate(_objects, (objs, st) => {
                     foreach (var o in st._objects) objs.AddLast(o);
