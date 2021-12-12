@@ -2,6 +2,7 @@ using System.Linq;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using System;
 
 namespace Sergey.Safonov.Utility
 {
@@ -111,17 +112,28 @@ namespace Sergey.Safonov.Utility
             if (!_boundary.Contains(location)) return false;
 
             if (RemoveTheCellObject(obj)) return true;
-            
-            if (_subTrees.Any(childTree => childTree.RemoveNarrow(obj, location, searchOutOfLocation))) return true;
+
+            if (_subTrees.Any(childTree => childTree.RemoveNarrow(obj, location, searchOutOfLocation))) {
+                if (isReadyForCompression()) combine();
+                return true;
+            }
 
             //we are at the bottom. Now we can start to search widely up
             return (searchOutOfLocation && _parent != null) && _parent.RemoveWide(obj, this);
         }
 
 
-        private bool RemoveWide(T obj, QuadTree<T> treeToExclude = null) 
-            => RemoveTheCellObject(obj) 
-               || _subTrees.Where(subTree => subTree != treeToExclude).Any(childTree => childTree.RemoveWide(obj));
+        private bool RemoveWide(T obj, QuadTree<T> treeToExclude = null)
+        {
+            if (RemoveTheCellObject(obj)) return true;
+
+            if (_subTrees.Where(subTree => subTree != treeToExclude).Any(childTree => childTree.RemoveWide(obj)))
+            {
+                if (isReadyForCompression()) combine();
+                return true;
+            }
+            return false;
+        }
 
 
         private bool RemoveTheCellObject(T obj)
@@ -153,6 +165,23 @@ namespace Sergey.Safonov.Utility
                 if (_subTrees.Any(child => child.Add(p.Obj, p.Point))) continue;
             }
             _objects.Clear();
+        }
+
+
+        private bool isReadyForCompression()
+        {
+            return !_subTrees.Any(st => st._subTrees.Any()) && _subTrees.Aggregate(0, (c, st) => c + st._objects.Count) <= _cellCapacity;
+        }
+
+
+        private void combine()
+        {
+            _subTrees.Aggregate(_objects, (objs, st) => {
+                    foreach (var o in st._objects) objs.AddLast(o);
+                    return objs;
+                });
+
+            _subTrees.Clear();
         }
 
 
